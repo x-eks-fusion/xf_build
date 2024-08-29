@@ -15,6 +15,11 @@ XF_TARGET_PATH: 记录激活平台的源工程绝对路径
 XF_PROJECT_PATH(可选): 记录当前工程绝对路径，如果没有设置，则会将当前执行命令的路径设置为工程路径 
 XF_PROJECT(可选): 记录当前工程名称，如果没有设置，则会将当前执行命令的文件夹名设置为工程路径
 
+# 开源地址
+
+[github](https://github.com/x-eks-fusion/xf_build)
+[gitee](https://gitee.com/x-eks-fusion/xf_build)
+
 # 安装
 
 ```shell
