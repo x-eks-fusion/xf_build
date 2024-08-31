@@ -80,7 +80,7 @@ def clean(ctx, args) -> None:
 @cli.command()
 @click.argument("args", nargs=-1)
 def menuconfig(args) -> None:
-    """F
+    """
     全局宏的配置
     """
 
