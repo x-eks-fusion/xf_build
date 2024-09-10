@@ -7,10 +7,8 @@ import logging
 
 from ..log import logging_setup
 from ..env import is_project
-from ..env import set_XF_PROJECT_PATH
 from ..env import XF_ROOT
 from ..env import ROOT_PLUGIN
-from ..env import XF_VERSION
 from ..plugins import Plugins
 
 from . import project
@@ -28,7 +26,6 @@ pass_context = click.make_pass_decorator(dict, ensure=True)
 @pass_context
 def cli(ctx, verbose, rich, test) -> None:
     ctx["test"] = test
-    set_XF_PROJECT_PATH(".")
     if verbose:
         logging_setup(level=logging.DEBUG, rich=rich)
     else:
@@ -107,14 +104,6 @@ def flash(args) -> None:
     plugin.add(ROOT_PLUGIN)
     hook: pluggy.HookRelay = plugin.get_hook()
     hook.flash(args=args)
-
-
-@cli.command()
-def version() -> None:
-    """
-    查询当前版本
-    """
-    print(XF_VERSION)
 
 
 @cli.command()

@@ -11,8 +11,6 @@ from pathlib import Path
 ENTER_SCRIPT = "xf_project.py"
 COLLECT_SCRIPT = "xf_collect.py"
 
-XF_VERSION: str = "v0.2.2"
-
 XF_ROOT = Path(os.environ.get("XF_ROOT")).resolve()
 XF_TARGET = os.environ.get("XF_TARGET")
 XF_TARGET_PATH = Path(os.environ.get("XF_TARGET_PATH")).resolve()
@@ -31,45 +29,11 @@ ROOT_PROJECT_INFO = ROOT_BUILD_PATH / "project_info.json"
 
 ROOT_BOARDS = XF_ROOT / "boards"
 ROOT_COMPONENTS = XF_ROOT / "components"
+ROOT_PORT = XF_ROOT / "port" / XF_TARGET
 
 ROOT_PLUGIN = XF_ROOT / "plugins" / XF_TARGET
 
 ROOT_TEMPLATE_PATH = XF_ROOT / "examples" / "get_started" / "template_project"
-
-
-def set_XF_PROJECT(xf_project) -> None:
-    global XF_PROJECT
-    os.environ["XF_PROJECT"] = xf_project
-    XF_PROJECT = xf_project
-
-
-def set_XF_PROJECT_PATH(xf_project_path) -> None:
-    global XF_PROJECT_PATH
-    xf_project_path = Path(xf_project_path).resolve()
-    os.environ["XF_PROJECT_PATH"] = xf_project_path.as_posix()
-    XF_PROJECT_PATH = xf_project_path
-
-
-def load_other_dirs() -> list:
-    if not PROJECT_BUILD_INFO.exists():
-        return []
-
-    with PROJECT_BUILD_INFO.open("r", encoding="utf-8") as f:
-        info: dict = json.load(f)
-
-    return info.get("user_dirs", [])
-
-
-def save_other_dirs(dirs: list) -> None:
-    info: dict = {}
-    if PROJECT_BUILD_INFO.exists():
-        with PROJECT_BUILD_INFO.open("r", encoding="utf-8") as f:
-            info = json.load(f)
-    elif not PROJECT_BUILD_PATH.exists():
-        PROJECT_BUILD_PATH.mkdir()
-    with PROJECT_BUILD_INFO.open("w") as f:
-        info["user_dirs"] = dirs
-        json.dump(info, f, indent=4)
 
 
 def clean_project_build() -> None:
