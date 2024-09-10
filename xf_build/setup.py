@@ -2,14 +2,15 @@
 
 from setuptools import setup, find_packages
 from pathlib import Path
-import xf_build
+
+XF_VERSION: str = "v0.2.3"
 
 HERE = Path(__file__).parent.parent
 README = (HERE / "README.md").read_text(encoding="utf-8")
 
 setup(
     name='xf_build',
-    version=xf_build.XF_VERSION,
+    version=XF_VERSION,
     author='kirto',
     author_email='sky.kirto@qq.com',
     description="A tools for xfusion",

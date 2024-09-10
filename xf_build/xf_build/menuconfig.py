@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from kconfiglib import Kconfig
 from menuconfig import menuconfig
-from collections import defaultdict
 import logging
 
 
@@ -62,86 +61,6 @@ class MenuConfig(Kconfig):
 
         self.write_autoconf(self.header_path.as_posix())
         self.__add_header()
-
-    @classmethod
-    def search_XFKconfig(cls, name, path) -> str:
-        """
-        收集path路径下的XFKconfig，并自动通过路径生成多级菜单
-
-        :param name 最上层菜单名称
-        :param path 搜索根路径
-        :return 格式化完成的多级菜单XFKconfig字符串
-        """
-
-        def build_tree_from_paths(paths) -> dict:
-            def _add_path_to_tree(tree, path) -> None:
-                parts = path.split("/")
-                node = tree
-                for part in parts:
-                    node = node.setdefault(part, {})
-
-            tree = defaultdict(dict)
-            for path in paths:
-                _add_path_to_tree(tree, path.as_posix())
-
-            return dict(tree)
-
-        def format_tree(tree, menu, base_path) -> str:
-            path = Path("")
-            stack = [(1, "", tree, iter(tree.items()))]
-            output: list[str] = [f'menu "{menu}"']
-            while stack:
-                try:
-                    indent, _, __, iterator = stack[-1]
-                    sub_indent = "  " * indent
-                    child_key, child_node = next(iterator)
-                    if child_node != {}:
-                        path = path / child_key
-                        output.append(f'{sub_indent}menu "{child_key}"')
-                        stack.append(
-                            (
-                                indent + 1,
-                                child_key,
-                                child_node,
-                                iter(child_node.items()),
-                            )
-                        )
-                    else:
-                        _path = base_path / path / child_key
-                        output.append(
-                            f'{sub_indent}source "{_path.as_posix()}"')
-                except StopIteration:
-                    stack.pop()
-                    if len(stack) == 0:
-                        break
-                    path = path.parent
-                    indent, _, __, iterator = stack[-1]
-                    sub_indent = "  " * indent
-                    output.append(f"{sub_indent}endmenu")
-            output.append("endmenu")
-            return "\n".join(output)
-
-        file_paths = []  # 存储文件路径的列表
-
-        if isinstance(path, str):
-            path = Path(path).resolve()
-        else:
-            path = path.resolve()
-
-        for entry in path.iterdir():
-            if not entry.is_dir():
-                continue
-            for entry2 in entry.iterdir():
-                if not entry2.is_file() or entry2.name != cls.XFKCONFIG_NAME:
-                    continue
-                file_paths.append(entry2)
-
-        path_rel = [i.relative_to(path) for i in file_paths]
-        path_tree = build_tree_from_paths(path_rel)
-        path_file: str = format_tree(path_tree, name, path)
-        path_file += "\n"
-
-        return path_file
 
     def __add_header(self) -> None:
         with open(self.header_path, "r", encoding="utf-8") as f:

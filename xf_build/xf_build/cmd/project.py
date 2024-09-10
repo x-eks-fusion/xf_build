@@ -2,15 +2,16 @@
 import logging
 import shutil
 from pathlib import Path
+import json
 
 from ..menuconfig import MenuConfig
 from ..env import is_project
-from ..env import run_build, load_other_dirs
+from ..env import run_build
 from ..env import clean_project_build
-from ..env import ENTER_SCRIPT
-from ..env import ROOT_TEMPLATE_PATH, ROOT_BOARDS
+from ..env import ENTER_SCRIPT, ROOT_PORT, ROOT_BOARDS
+from ..env import ROOT_TEMPLATE_PATH, PROJECT_BUILD_ENV
 from ..env import PROJECT_CONFIG_PATH, PROJECT_BUILD_PATH
-from ..env import XF_ROOT, XF_PROJECT_PATH, XF_TARGET_PATH
+from ..env import XF_ROOT, XF_TARGET_PATH
 
 
 def scan_kconfig() -> MenuConfig:
@@ -18,30 +19,75 @@ def scan_kconfig() -> MenuConfig:
     扫描收集kconfig, 并生成头文件
     """
     logging.info("scan config")
-    other_dirs: list = load_other_dirs()
     path: list = [
         XF_ROOT / MenuConfig.XFKCONFIG_NAME,
         ROOT_BOARDS / MenuConfig.XFKCONFIG_NAME,
     ]
-    main_xfconfig = XF_PROJECT_PATH / "main" / MenuConfig.XFKCONFIG_NAME
-    if main_xfconfig.exists():
-        path.append(main_xfconfig)
-    path.extend(other_dirs)
+    port_xfconfig = ROOT_PORT / MenuConfig.XFKCONFIG_NAME
+    if port_xfconfig.exists():
+        path.append(port_xfconfig)
+
     path_file: str = "\n".join([f'source "{i.as_posix()}"' for i in path])
     path_file += "\n"
 
-    components = XF_ROOT / "components"
-    custom_path = XF_PROJECT_PATH / "components"
+    with PROJECT_BUILD_ENV.open("r", encoding="utf-8") as f:
+        build_env = json.load(f)
+        public_components =  [Path(i["path"]) for i in build_env["public_components"].values()]
+        user_main = Path(build_env["user_main"]["path"])
+        user_components =  [Path(i["path"]) for i in build_env["user_components"].values()]
+        user_dirs =  [Path(i["path"]) for i in build_env["user_dirs"].values()]
 
-    path_file += MenuConfig.search_XFKconfig("system components", components)
-    if custom_path.exists():
-        path_file += MenuConfig.search_XFKconfig(
-            "user components", custom_path)
+    # public components 部分的处理
+    if public_components != []:
+        path_file += "menu \"public components\"\n"
+        for i in public_components:
+            public_component_xfconfig = i / MenuConfig.XFKCONFIG_NAME
+            if not public_component_xfconfig.exists():
+                continue
+            public_component_config = "  menu \"" + i.name + "\"\n"
+            public_component_config += "    source \"" + public_component_xfconfig.as_posix() + "\"\n"
+            public_component_config += "  endmenu\n"
+            path_file += public_component_config + "\n"
+        path_file += "endmenu\n\n"
+
+    # main 部分的处理
+    user_main_xfconfig = user_main / MenuConfig.XFKCONFIG_NAME
+    if user_main_xfconfig.exists():
+        user_main_config = "menu \"main\"\n"
+        user_main_config += "  source \"" + user_main_xfconfig.as_posix() + "\"\n"
+        user_main_config += "endmenu\n"
+        path_file += user_main_config + "\n"
+
+    # components 部分的处理
+    if user_components != []:
+        path_file += "menu \"user components\"\n"
+        for i in user_components:
+            user_component_xfconfig = i / MenuConfig.XFKCONFIG_NAME
+            if not user_component_xfconfig.exists():
+                continue
+            user_component_config = "  menu \"" + i.name + "\"\n"
+            user_component_config += "    source \"" + user_component_xfconfig.as_posix() + "\"\n"
+            user_component_config += "  endmenu\n"
+            path_file += user_component_config + "\n"
+        path_file += "endmenu\n\n"
+
+    if user_dirs != []:
+        # dirs 部分的处理
+        path_file += "menu \"user dirs\"\n"
+        for i in user_dirs:
+            user_dir_xfconfig = i / MenuConfig.XFKCONFIG_NAME
+            if not user_dir_xfconfig.exists():
+                continue
+            user_dir_config = "  menu \"" + i.name + "\"\n"
+            user_dir_config += "    source \"" + user_dir_xfconfig.as_posix() + "\"\n"
+            user_dir_config += "  endmenu\n"
+            path_file += user_dir_config + "\n"
+        path_file += "endmenu\n\n"
+
     with PROJECT_CONFIG_PATH.open("w", encoding="utf-8") as f:
         f.write(path_file)
 
-    config = MenuConfig(PROJECT_CONFIG_PATH,
-                        XF_TARGET_PATH, PROJECT_BUILD_PATH)
+    config = MenuConfig(PROJECT_CONFIG_PATH, XF_TARGET_PATH, PROJECT_BUILD_PATH)
 
     return config
 
@@ -61,7 +107,6 @@ def clean():
         logging.warning("该目录不是工程文件夹")
         return
     clean_project_build()
-    # clean_root_build()
 
 
 def menuconfig():
