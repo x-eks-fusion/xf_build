@@ -2,16 +2,15 @@
 import logging
 import shutil
 from pathlib import Path
-import json
 
 from ..menuconfig import MenuConfig
 from ..env import is_project
 from ..env import run_build
 from ..env import clean_project_build
-from ..env import ENTER_SCRIPT, ROOT_PORT, ROOT_BOARDS
-from ..env import ROOT_TEMPLATE_PATH, PROJECT_BUILD_ENV
+from ..env import ENTER_SCRIPT
+from ..env import ROOT_TEMPLATE_PATH
 from ..env import PROJECT_CONFIG_PATH, PROJECT_BUILD_PATH
-from ..env import XF_ROOT, XF_TARGET_PATH
+from ..env import XF_TARGET_PATH
 
 
 def build():
