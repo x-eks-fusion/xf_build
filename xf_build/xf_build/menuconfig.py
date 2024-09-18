@@ -3,6 +3,11 @@ from pathlib import Path
 from kconfiglib import Kconfig
 from menuconfig import menuconfig
 import logging
+import json
+
+from .env import XF_ROOT, ROOT_BOARDS, ROOT_PORT
+from .env import PROJECT_BUILD_INFO
+from .env import PROJECT_CONFIG_PATH
 
 
 class MenuConfig(Kconfig):
@@ -85,3 +90,84 @@ class MenuConfig(Kconfig):
         if value is None:
             return None
         return value.str_value
+
+    @classmethod
+    def scan_kconfig(cls):
+        """
+        扫描收集kconfig, 并生成头文件
+        """
+        logging.info("scan config")
+        path: list = [
+            XF_ROOT / cls.XFKCONFIG_NAME,
+            ROOT_BOARDS / cls.XFKCONFIG_NAME,
+        ]
+        port_xfconfig = ROOT_PORT / cls.XFKCONFIG_NAME
+        if port_xfconfig.exists():
+            path.append(port_xfconfig)
+
+        path_file: str = "\n".join([f'source "{i.as_posix()}"' for i in path])
+        path_file += "\n"
+
+        with PROJECT_BUILD_INFO.open("r", encoding="utf-8") as f:
+            build_info = json.load(f)
+            public_components = [
+                Path(i) for i in build_info["public_components"]]
+            user_main = Path(build_info["user_main"][0])
+            user_components = [Path(i)
+                               for i in build_info["user_components"]]
+            user_dirs = [Path(i)
+                         for i in build_info["user_dirs"]]
+
+        # public components 部分的处理
+        if public_components != []:
+            path_file += "menu \"public components\"\n"
+            for i in public_components:
+                public_component_xfconfig = i / cls.XFKCONFIG_NAME
+                if not public_component_xfconfig.exists():
+                    continue
+                public_component_config = "  menu \"" + i.name + "\"\n"
+                public_component_config += "    source \"" + \
+                    public_component_xfconfig.as_posix() + "\"\n"
+                public_component_config += "  endmenu\n"
+                path_file += public_component_config + "\n"
+            path_file += "endmenu\n\n"
+
+        # main 部分的处理
+        user_main_xfconfig = user_main / cls.XFKCONFIG_NAME
+        if user_main_xfconfig.exists():
+            user_main_config = "menu \"main\"\n"
+            user_main_config += "  source \"" + user_main_xfconfig.as_posix() + "\"\n"
+            user_main_config += "endmenu\n"
+            path_file += user_main_config + "\n"
+
+        # components 部分的处理
+        if user_components != []:
+            path_file += "menu \"user components\"\n"
+            for i in user_components:
+                user_component_xfconfig = i / cls.XFKCONFIG_NAME
+                if not user_component_xfconfig.exists():
+                    continue
+                user_component_config = "  menu \"" + i.name + "\"\n"
+                user_component_config += "    source \"" + \
+                    user_component_xfconfig.as_posix() + "\"\n"
+                user_component_config += "  endmenu\n"
+                path_file += user_component_config + "\n"
+            path_file += "endmenu\n\n"
+
+        if user_dirs != []:
+            # dirs 部分的处理
+            path_file += "menu \"user dirs\"\n"
+            for i in user_dirs:
+                user_dir_xfconfig = i / cls.XFKCONFIG_NAME
+                if not user_dir_xfconfig.exists():
+                    continue
+                user_dir_config = "  menu \"" + i.name + "\"\n"
+                user_dir_config += "    source \"" + user_dir_xfconfig.as_posix() + "\"\n"
+                user_dir_config += "  endmenu\n"
+                path_file += user_dir_config + "\n"
+            path_file += "endmenu\n\n"
+
+        with PROJECT_CONFIG_PATH.open("w", encoding="utf-8") as f:
+            f.write(path_file)
+
+        logging.info("scan config done")
