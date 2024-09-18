@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-XF_VERSION: str = "v0.2.3"
+XF_VERSION: str = "v0.3.0"
 
 HERE = Path(__file__).parent.parent
 README = (HERE / "README.md").read_text(encoding="utf-8")
