@@ -98,7 +98,7 @@ update 命令需要底层插件支持，其功能是更新导出的工程。与 
 
 # 历史更新记录
 
-**v0.3.0**
+**v0.3.1**
 1. 预编译阶段调用xf_project.py从被动的执行，改为读取后exec执行。
 2. 预编译前期会搜索：public components，user components 的所有子文件夹下是否含有xf_collect.py ，然后将user_dirs也搜索一遍，最后将user_main。构成初期的检索结果 build_info.json
 3. 中期调用menuconfig进行生成，menuconfig也会通过build_info.json的路径，进行XFKconfig的搜索
