@@ -95,7 +95,18 @@ uninstall 命令可以帮你删除指定的组件
 
 update 命令需要底层插件支持，其功能是更新导出的工程。与 export 不同的是，该命令不会创建新工程
 
-### version 命令   
 
-version 命令会获取当前 xf_build 版本
+# 历史更新记录
 
+**v0.3.0**
+1. 预编译阶段调用xf_project.py从被动的执行，改为读取后exec执行。
+2. 预编译前期会搜索：public components，user components 的所有子文件夹下是否含有xf_collect.py ，然后将user_dirs也搜索一遍，最后将user_main。构成初期的检索结果 build_info.json
+3. 中期调用menuconfig进行生成，menuconfig也会通过build_info.json的路径，进行XFKconfig的搜索
+4. 后期会将build_info.json的路径下的xf_collect.py全部执行一遍
+
+
+**v0.2.3**
+1. collect方法添加cflag参数
+2. 支持用户自定义文件夹
+3. 修改XFKconfig的扫描逻辑，现在会根据build_environ.json进行扫描。
+4. port部分的XFConfig会加入扫描中
