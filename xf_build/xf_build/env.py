@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import json
 import shutil
 import logging
-import subprocess
 from pathlib import Path
 
 ENTER_SCRIPT = "xf_project.py"
@@ -55,7 +53,7 @@ def is_project(folder) -> bool:
 
 def check_target():
     """
-    检测目标是否改变，如果改变删除XF_PROJECT_PATH下面的build内容
+    检测目标是否改变，如果改变清除工程
     """
     info = {}
     if ROOT_PROJECT_INFO.exists():
@@ -79,7 +77,7 @@ def check_target():
 
 def check_project():
     """
-    检测工程是否改变，如果改变删除XF_ROOT下面的build内容
+    检测工程是否改变，如果改变清除工程
     """
     info = {}
     if ROOT_PROJECT_INFO.exists():
@@ -108,11 +106,9 @@ def run_build() -> None:
     check_target()
     check_project()
 
-    # 该阶段会产生XF_PROJECT环境变量
-    command: list[str] = [sys.executable, ENTER_SCRIPT]
     try:
-        subprocess.run(command, check=True)
+        with open(ENTER_SCRIPT, "r", encoding="utf-8") as f:
+            exec(f.read())
     except Exception as e:
-        command_string = " ".join(command)
-        logging.error(f"指令{command_string}执行错误: {e}")
+        logging.error(f"预编译错误: {e}")
         return
