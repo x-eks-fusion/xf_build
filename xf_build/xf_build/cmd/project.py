@@ -2,6 +2,7 @@
 import logging
 import shutil
 from pathlib import Path
+import json
 
 from ..menuconfig import MenuConfig
 from ..env import is_project
