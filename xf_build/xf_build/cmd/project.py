@@ -2,6 +2,12 @@
 import logging
 import shutil
 from pathlib import Path
+import os
+import sys
+from rich.panel import Panel
+from rich.text import Text
+from rich.console import Console
+from art import text2art
 import json
 
 from ..menuconfig import MenuConfig
@@ -9,15 +15,14 @@ from ..env import is_project
 from ..env import run_build
 from ..env import clean_project_build
 from ..env import ENTER_SCRIPT
-from ..env import ROOT_TEMPLATE_PATH
+from ..env import ROOT_TEMPLATE_PATH, XF_ROOT
 from ..env import PROJECT_CONFIG_PATH, PROJECT_BUILD_PATH
-from ..env import XF_TARGET_PATH
+from ..env import XF_TARGET, XF_TARGET_PATH
 
 
 def build():
     if not is_project("."):
-        logging.warning("该目录不是工程文件夹")
-        return
+        raise Exception("该目录不是工程文件夹")
 
     logging.info("run build")
     run_build()
@@ -25,15 +30,13 @@ def build():
 
 def clean():
     if not is_project("."):
-        logging.warning("该目录不是工程文件夹")
-        return
+        raise Exception("该目录不是工程文件夹")
     clean_project_build()
 
 
 def menuconfig():
     if not is_project("."):
-        logging.warning("该目录不是工程文件夹")
-        return
+        raise Exception("该目录不是工程文件夹")
     run_build()
     config = MenuConfig(PROJECT_CONFIG_PATH,
                         XF_TARGET_PATH, PROJECT_BUILD_PATH)
@@ -56,8 +59,7 @@ def create(name):
 
 def before_export(name):
     if not is_project("."):
-        logging.warning("该目录不是工程文件夹")
-        return
+        raise Exception("该目录不是工程文件夹")
 
     def is_subdirectory(parent: Path, child: Path) -> bool:
         """
@@ -100,8 +102,7 @@ def before_export(name):
 
 def before_update(name):
     if not is_project("."):
-        logging.warning("该目录不是工程文件夹")
-        return
+        raise Exception("该目录不是工程文件夹")
     name = Path(name)
     current_path = Path(".").resolve()
     if not (current_path / ENTER_SCRIPT).exists():
@@ -115,3 +116,58 @@ def before_update(name):
         return
     name_abspath = name.resolve()
     return name_abspath
+
+
+def monitor(port, baud=115200):
+    if os.linesep == "\r\n":
+        linesep = "CRLF"
+    else:
+        linesep = "LF"
+    os.system(
+        f"{sys.executable} -m serial.tools.miniterm {port} {baud} --eol={linesep} -f=direct ")
+
+
+def show_target():
+    console = Console()
+
+    # 创建彩色文本
+    target_art = text2art(XF_TARGET)
+    target_text = Text(f"{target_art}", style="bold magenta")
+    target_path_text = Text(f"{XF_TARGET_PATH}", style="bold cyan")
+
+    # 使用 Panel 包装输出
+    console.print(Panel(target_text, title="🔍 Target",
+                  subtitle="XF_TARGET", expand=False))
+    console.print(Panel(target_path_text, title="📁 Path",
+                  subtitle="XF_TARGET_PATH", expand=False))
+    
+def download_sdk():
+    target_json_path = Path(XF_TARGET_PATH) / "target.json"
+    if not target_json_path.exists():
+        raise Exception("target.json文件不存在")
+
+    with target_json_path.open("r", encoding="utf-8") as f:
+        target_json = json.load(f)
+    
+    if not target_json.get("sdks"):
+        logging.error("未找到需要下载的sdk")
+        return
+
+    if not target_json["sdks"].get("dirs"):
+        logging.error("需要配置SDK下载的文件夹位置")
+        return
+    
+    if not target_json["sdks"].get("url"):
+        logging.error("需要配置SDK下载的url")
+        return
+    
+    if (XF_ROOT/"sdks"/target_json["sdks"]["dirs"]).exists():
+        logging.info("SDK已下载，无需重复下载")
+        return 
+    
+    logging.info("开始下载SDK")
+    url = target_json["sdks"]["url"]
+    dirs = XF_ROOT/"sdks"/target_json["sdks"]["dirs"]
+    logging.info(f"下载SDK地址:{url}")
+    logging.info(f"下载SDK文件夹位置:{dirs}")
+    os.system("git clone --depth 1 %s %s" % (url, dirs))

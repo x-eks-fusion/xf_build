@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-XF_VERSION: str = "v0.3.1"
+XF_VERSION: str = "v0.3.3"
 
 HERE = Path(__file__).parent.parent
 README = (HERE / "README.md").read_text(encoding="utf-8")
@@ -27,7 +27,8 @@ setup(
         'pluggy',
         'kconfiglib',
         'requests',
-        'rich'
+        'rich',
+        'art'
     ],
     entry_points='''
         [console_scripts]
