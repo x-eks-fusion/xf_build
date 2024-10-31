@@ -103,6 +103,10 @@ def apply_components_template(temp, suffix):
     for i in config_data["user_components"]:
         template_generation(config_data["user_components"][i], [
                             "user_components", i])
+    
+    for i in config_data["user_dirs"]:
+        template_generation(config_data["user_dirs"][i], [
+                            "user_dirs", i])
 
     template_generation(config_data["user_main"], ["user_main"])
 
@@ -123,3 +127,13 @@ def cd_to_target():
 
 def cd_to_project():
     os.chdir(XF_PROJECT_PATH)
+
+def get_sdk_dir():
+    target_json_path = Path(XF_TARGET_PATH) / "target.json"
+    if not target_json_path.exists():
+        return ""
+    with target_json_path.open("r", encoding="utf-8") as f:
+        target_json = json.load(f)
+    if not target_json["sdks"].get("dir"):
+        return ""
+    return target_json["sdks"]["dir"]

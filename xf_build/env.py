@@ -48,7 +48,9 @@ def is_project(folder) -> bool:
     """
     判断目标文件夹是否是xf工程
     """
-    return (Path(folder)/ENTER_SCRIPT).exists()
+    if (Path(folder)/ENTER_SCRIPT).exists():
+        return 
+    raise Exception("该目录不是工程文件夹")
 
 
 def check_target():

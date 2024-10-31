@@ -20,9 +20,9 @@ pass_context = click.make_pass_decorator(dict, ensure=True)
 
 
 @click.group()
-@click.option('--verbose', '-v', is_flag=True, default=False, help="Enable verbose mode.")
-@click.option('--rich', '-r', is_flag=True, default=False, help="Enable rich mode.")
-@click.option('--test', '-t', is_flag=True, default=False, help="Enable test mode.")
+@click.option('--verbose', '-v', is_flag=True, default=False, help="打印更多日志信息")
+@click.option('--rich', '-r', is_flag=True, default=False, help="使用rich库打印日志")
+@click.option('--test', '-t', is_flag=True, default=False, help="测试模式（不会调用插件）")
 @pass_context
 def cli(ctx, verbose, rich, test) -> None:
     ctx["test"] = test
@@ -96,9 +96,7 @@ def flash(args) -> None:
     """
     烧录工程（需要port对接）
     """
-    if not is_project("."):
-        logging.warning("该目录不是工程文件夹")
-        return
+    is_project(".")
 
     plugin = Plugins()
     plugin.add(ROOT_PLUGIN)
@@ -135,7 +133,7 @@ def export(ctx, name, args) -> None:
 
 
 @cli.command()
-@click.argument("name", type=click.Path(exists=False))
+@click.argument("name", type=click.Path(exists=True))
 @click.argument("args", nargs=-1)
 @pass_context
 def update(ctx, name, args) -> None:
@@ -161,36 +159,53 @@ def install(name, version, glob):
     """
     安装指定的包
     """
-    if not is_project("."):
-        logging.warning("该目录不是工程文件夹")
-        return
+    is_project(".")
     download_file(name, version, glob)
 
 
 @cli.command()
-@click.argument("name", type=click.Path(exists=False))
+@click.argument("name", type=str)
 @click.option("-g", "--glob", is_flag=True, help="卸载全局还是本地的包", default=False)
 def uninstall(name, glob):
     """
     卸载指定的包
     """
-    if not is_project("."):
-        logging.warning("该目录不是工程文件夹")
-        return
+    is_project(".")
     remove_file(name, glob)
 
 
 @cli.command()
-@click.argument("name", type=click.Path(exists=False))
+@click.argument("name", type=str)
 def search(name):
     """
     模糊搜索包名
     """
-    if not is_project("."):
-        logging.warning("该目录不是工程文件夹")
-        return
+    is_project(".")
     search_by_name(name)
 
+
+@cli.command()
+@click.argument("port", type=str)
+@click.option("-b", "--baud", type=int, default=115200, help="波特率")
+def monitor(port, baud):
+    """
+    串口监视器
+    """
+    project.monitor(port, baud)
+
+@cli.command()
+@click.option("-s", "--show", is_flag=True, default=False, help="展示目标和目标路径")
+@click.option("-d", "--download", is_flag=True, default=False, help="下载SDK")
+def target(show, download):
+    """
+    target 相关操作：展示目标或下载SDK
+    """
+    if show and not download:
+        project.show_target()
+    elif download and not show:
+        project.download_sdk()
+    else:
+        logging.error("参数错误")
 
 if __name__ == "__main__":
     cli()
