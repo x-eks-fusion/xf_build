@@ -21,22 +21,19 @@ from ..env import XF_TARGET, XF_TARGET_PATH
 
 
 def build():
-    if not is_project("."):
-        raise Exception("该目录不是工程文件夹")
+    is_project(".")
 
     logging.info("run build")
     run_build()
 
 
 def clean():
-    if not is_project("."):
-        raise Exception("该目录不是工程文件夹")
+    is_project(".")
     clean_project_build()
 
 
 def menuconfig():
-    if not is_project("."):
-        raise Exception("该目录不是工程文件夹")
+    is_project(".")
     run_build()
     config = MenuConfig(PROJECT_CONFIG_PATH,
                         XF_TARGET_PATH, PROJECT_BUILD_PATH)
@@ -58,8 +55,7 @@ def create(name):
 
 
 def before_export(name):
-    if not is_project("."):
-        raise Exception("该目录不是工程文件夹")
+    is_project(".")
 
     def is_subdirectory(parent: Path, child: Path) -> bool:
         """
@@ -101,8 +97,7 @@ def before_export(name):
 
 
 def before_update(name):
-    if not is_project("."):
-        raise Exception("该目录不是工程文件夹")
+    is_project(".")
     name = Path(name)
     current_path = Path(".").resolve()
     if not (current_path / ENTER_SCRIPT).exists():
@@ -153,7 +148,7 @@ def download_sdk():
         logging.error("未找到需要下载的sdk")
         return
 
-    if not target_json["sdks"].get("dirs"):
+    if not target_json["sdks"].get("dir"):
         logging.error("需要配置SDK下载的文件夹位置")
         return
     
@@ -161,13 +156,22 @@ def download_sdk():
         logging.error("需要配置SDK下载的url")
         return
     
-    if (XF_ROOT/"sdks"/target_json["sdks"]["dirs"]).exists():
+    if (XF_ROOT/"sdks"/target_json["sdks"]["dir"]).exists():
         logging.info("SDK已下载，无需重复下载")
         return 
     
     logging.info("开始下载SDK")
     url = target_json["sdks"]["url"]
-    dirs = XF_ROOT/"sdks"/target_json["sdks"]["dirs"]
+    dir = XF_ROOT/"sdks"/target_json["sdks"]["dir"]
+    commit = target_json["sdks"].get("commit")
+    branch = target_json["sdks"].get("branch")
     logging.info(f"下载SDK地址:{url}")
-    logging.info(f"下载SDK文件夹位置:{dirs}")
-    os.system("git clone --depth 1 %s %s" % (url, dirs))
+    logging.info(f"下载SDK文件夹位置:{dir}")
+    if not branch:
+        os.system("git clone --depth 1 %s %s" % (url, dir))
+    else:
+        os.system("git clone --depth 1 -b %s %s %s" % (branch, url, dir))
+    os.chdir(dir)
+    if commit:
+        os.system("git fetch --depth=1 origin %s" % (commit))
+        os.system("git reset --hard %s" % (commit))
