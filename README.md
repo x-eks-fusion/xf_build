@@ -107,6 +107,10 @@ update 命令需要底层插件支持，其功能是更新导出的工程。与 
 
 # 历史更新记录
 
+**v0.3.7**
+1. 修复 user_dirs 在 apply_components_template() 中无效的bug
+2. 新增获取target的sdk路径的API
+
 **v0.3.6**
 1. 新增monitor功能，用户可以通过monitor使用命令行串口监视器
 2. 新增target功能，-s可以查询当前target信息，-d可以下载对应的sdk
