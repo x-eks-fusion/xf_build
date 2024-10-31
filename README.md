@@ -30,13 +30,13 @@ pip install xf_build
 # 命令介绍
 
 ```shell
-xf --help        
+xf --help
 Usage: xf [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  -v, --verbose  Enable verbose mode.
-  -r, --rich     Enable rich mode.
-  -t, --test     Enable test mode.
+  -v, --verbose  打印更多日志信息
+  -r, --rich     使用rich库打印日志
+  -t, --test     测试模式（不会调用插件）
   --help         Show this message and exit.
 
 Commands:
@@ -47,10 +47,11 @@ Commands:
   flash       烧录工程（需要port对接）
   install     安装指定的包
   menuconfig  全局宏的配置
+  monitor     串口监视器
   search      模糊搜索包名
+  target      target 相关操作：展示目标或下载SDK
   uninstall   卸载指定的包
   update      更新对应sdk的工程（需要port对接）
-  version     查询当前版本
 ```
 
 ### build 命令
@@ -83,9 +84,17 @@ install 命令是通过 requests 请求远端的服务器下载指定的软件�
 
 install 命令是收集 XF_ROOT/components/\*/XFKconfig 和 XF_PROJECT_PATH/components/\*/XFKconfig 并生成命令行可视化配置界面。配置完成后会在 build/header_config 文件夹下，生成 xfconfig.h 文件。
 
+### monitor 命令
+
+使用命令行串口监视器，Ctrl+]退出串口监视器
+
 ### search 命令
 
 search 命令是可以查询包名是否存在
+
+### target 命令
+
+该命令主要用于和target相关的操作，-s展示当前的target信息，-d下载当前的target sdk
 
 ### uninstall 命令
 
@@ -97,6 +106,11 @@ update 命令需要底层插件支持，其功能是更新导出的工程。与 
 
 
 # 历史更新记录
+
+**v0.3.3**
+1. 新增monitor功能，用户可以通过monitor使用命令行串口监视器
+2. 新增target功能，-s可以查询当前target信息，-d可以下载对应的sdk
+3. 当某些指令判断当前不是project工程，则直接raise报错
 
 **v0.3.1**
 1. 预编译阶段调用xf_project.py从被动的执行，改为读取后exec执行。
