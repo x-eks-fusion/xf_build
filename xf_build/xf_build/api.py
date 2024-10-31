@@ -103,6 +103,10 @@ def apply_components_template(temp, suffix):
     for i in config_data["user_components"]:
         template_generation(config_data["user_components"][i], [
                             "user_components", i])
+    
+    for i in config_data["user_dirs"]:
+        template_generation(config_data["user_dirs"][i], [
+                            "user_dirs", i])
 
     template_generation(config_data["user_main"], ["user_main"])
 
