@@ -1,5 +1,5 @@
 include README.md
 include LICENSE
+include *
 include xf_build/*
-include xf_build/xf_build/*
-include xf_build/xf_build/cmd/*
+include xf_build/cmd/*
