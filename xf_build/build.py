@@ -49,7 +49,7 @@ class Project:
             else:
                 self.user_dirs.append(Path(i).resolve())
 
-    def program(self, cflags=[]):
+    def program(self, cflags: list = []):
         """
         工程建立，这里开始调用最外层脚本开始构建工程
 

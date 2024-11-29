@@ -14,7 +14,7 @@ collect_srcs = None
 get_define = None
 
 
-def project_init(user_dirs=[]) -> None:
+def project_init(user_dirs: list = []) -> None:
     global default_project, program, collect, collect_srcs, add_folders, get_define
     default_project = Project(user_dirs)
     program = default_project.program

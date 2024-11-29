@@ -107,6 +107,11 @@ update 命令需要底层插件支持，其功能是更新导出的工程。与 
 
 # 历史更新记录
 
+**v0.3.9**
+1. xf target 默认执行 xf target -s 功能
+2. 新增pyseiral依赖
+3. 对 xfusion 未激活的报错进行处理，提醒 export
+
 **v0.3.7**
 1. 修复 user_dirs 在 apply_components_template() 中无效的bug
 2. 新增获取target的sdk路径的API

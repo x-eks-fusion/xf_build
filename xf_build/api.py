@@ -103,7 +103,7 @@ def apply_components_template(temp, suffix):
     for i in config_data["user_components"]:
         template_generation(config_data["user_components"][i], [
                             "user_components", i])
-    
+
     for i in config_data["user_dirs"]:
         template_generation(config_data["user_dirs"][i], [
                             "user_dirs", i])
@@ -128,6 +128,7 @@ def cd_to_target():
 def cd_to_project():
     os.chdir(XF_PROJECT_PATH)
 
+
 def get_sdk_dir():
     target_json_path = Path(XF_TARGET_PATH) / "target.json"
     if not target_json_path.exists():
@@ -137,3 +138,27 @@ def get_sdk_dir():
     if not target_json["sdks"].get("dir"):
         return ""
     return target_json["sdks"]["dir"]
+
+
+def get_XF_ROOT():
+    return XF_ROOT
+
+
+def get_XF_TARGET_PATH():
+    return XF_TARGET_PATH
+
+
+def get_XF_PROJECT_PATH():
+    return XF_PROJECT_PATH
+
+
+def get_PROJECT_BUILD_PATH():
+    return PROJECT_BUILD_PATH
+
+
+def get_ROOT_PLUGIN():
+    return ROOT_PLUGIN
+
+
+def get_PROJECT_CONFIG_PATH():
+    return PROJECT_CONFIG_PATH

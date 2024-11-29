@@ -9,9 +9,13 @@ from pathlib import Path
 ENTER_SCRIPT = "xf_project.py"
 COLLECT_SCRIPT = "xf_collect.py"
 
-XF_ROOT = Path(os.environ.get("XF_ROOT")).resolve()
-XF_TARGET = os.environ.get("XF_TARGET")
-XF_TARGET_PATH = Path(os.environ.get("XF_TARGET_PATH")).resolve()
+try:
+    XF_ROOT = Path(os.environ.get("XF_ROOT")).resolve()
+    XF_TARGET = os.environ.get("XF_TARGET")
+    XF_TARGET_PATH = Path(os.environ.get("XF_TARGET_PATH")).resolve()
+except TypeError:
+    raise Exception("环境变量未设置, 请检查是否调用 export 脚本")
+
 
 XF_PROJECT_PATH = Path(os.environ.get("XF_PROJECT_PATH", Path("."))).resolve()
 os.environ["XF_PROJECT_PATH"] = XF_PROJECT_PATH.as_posix()
@@ -51,7 +55,7 @@ def is_project(folder) -> bool:
     判断目标文件夹是否是xf工程
     """
     if (Path(folder)/ENTER_SCRIPT).exists():
-        return 
+        return
     raise Exception("该目录不是工程文件夹")
 
 

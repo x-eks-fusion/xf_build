@@ -193,6 +193,7 @@ def monitor(port, baud):
     """
     project.monitor(port, baud)
 
+
 @cli.command()
 @click.option("-s", "--show", is_flag=True, default=False, help="展示目标和目标路径")
 @click.option("-d", "--download", is_flag=True, default=False, help="下载SDK")
@@ -200,12 +201,11 @@ def target(show, download):
     """
     target 相关操作：展示目标或下载SDK
     """
-    if show and not download:
-        project.show_target()
-    elif download and not show:
+    if download and not show:
         project.download_sdk()
     else:
-        logging.error("参数错误")
+        project.show_target()
+
 
 if __name__ == "__main__":
     cli()
