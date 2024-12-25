@@ -22,9 +22,7 @@ setup(
     python_requires='>=3.6',
     include_package_data=True,
     install_requires=[
-        'click',
         'jinja2',
-        'pluggy',
         'kconfiglib',
         'requests',
         'rich',
@@ -33,7 +31,7 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        xf=xf_build.cmd.cmd:cli
+        xf=xf_build.cmd.cmd:main
     ''',
     url="http://www.coral-zone.cc/",
     long_description=README,

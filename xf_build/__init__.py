@@ -3,10 +3,6 @@
 # 该部分是给开发者于编译的时候调用的
 from .build import Project
 
-# 该部分是移植者注册插件的时候调用的
-from .plugins import Plugins
-from .plugins import get_hookimpl
-
 default_project = None
 program = None
 collect = None
