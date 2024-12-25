@@ -19,6 +19,9 @@ from ..env import ROOT_TEMPLATE_PATH, XF_ROOT
 from ..env import PROJECT_CONFIG_PATH, PROJECT_BUILD_PATH
 from ..env import XF_TARGET, XF_TARGET_PATH
 
+from serial.tools.miniterm import Miniterm
+import serial
+
 
 def build():
     is_project(".")
@@ -115,11 +118,20 @@ def before_update(name):
 
 def monitor(port, baud=115200):
     if os.linesep == "\r\n":
-        linesep = "CRLF"
+        linesep = "crlf"
     else:
-        linesep = "LF"
-    os.system(
-        f"{sys.executable} -m serial.tools.miniterm {port} {baud} --eol={linesep} -f=direct ")
+        linesep = "lf"
+
+    serial_instance = serial.Serial(port, baud)
+
+    # 设置流控信号拉低
+    serial_instance.rts = False  # 拉低 RTS
+    serial_instance.dtr = False  # 拉低 DTR
+    miniterm = Miniterm(serial_instance, echo=True, eol=linesep)
+    miniterm.set_rx_encoding('utf-8')
+    miniterm.set_tx_encoding('utf-8')
+    miniterm.start()  # 启动读写线程
+    miniterm.join()   # 阻塞等待
 
 
 def show_target():
@@ -135,7 +147,8 @@ def show_target():
                   subtitle="XF_TARGET", expand=False))
     console.print(Panel(target_path_text, title="📁 Path",
                   subtitle="XF_TARGET_PATH", expand=False))
-    
+
+
 def download_sdk():
     target_json_path = Path(XF_TARGET_PATH) / "target.json"
     if not target_json_path.exists():
@@ -143,7 +156,7 @@ def download_sdk():
 
     with target_json_path.open("r", encoding="utf-8") as f:
         target_json = json.load(f)
-    
+
     if not target_json.get("sdks"):
         logging.error("未找到需要下载的sdk")
         return
@@ -151,15 +164,15 @@ def download_sdk():
     if not target_json["sdks"].get("dir"):
         logging.error("需要配置SDK下载的文件夹位置")
         return
-    
+
     if not target_json["sdks"].get("url"):
         logging.error("需要配置SDK下载的url")
         return
-    
+
     if (XF_ROOT/"sdks"/target_json["sdks"]["dir"]).exists():
         logging.info("SDK已下载，无需重复下载")
-        return 
-    
+        return
+
     logging.info("开始下载SDK")
     url = target_json["sdks"]["url"]
     dir = XF_ROOT/"sdks"/target_json["sdks"]["dir"]
