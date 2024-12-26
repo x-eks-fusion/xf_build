@@ -113,6 +113,7 @@ def before_update(name):
         logging.error(f"path路径不存在，请确认：{current_path}")
         return
     name_abspath = name.resolve()
+    run_build()
     return name_abspath
 
 
