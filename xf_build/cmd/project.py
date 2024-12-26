@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 import os
 import sys
+import subprocess
 from rich.panel import Panel
 from rich.text import Text
 from rich.console import Console
@@ -14,7 +15,7 @@ from ..menuconfig import MenuConfig
 from ..env import is_project
 from ..env import run_build
 from ..env import clean_project_build
-from ..env import ENTER_SCRIPT
+from ..env import ENTER_SCRIPT, EXPORT_SCRIPT
 from ..env import ROOT_TEMPLATE_PATH, XF_ROOT
 from ..env import PROJECT_CONFIG_PATH, PROJECT_BUILD_PATH
 from ..env import XF_TARGET, XF_TARGET_PATH
@@ -189,3 +190,13 @@ def download_sdk():
     if commit:
         os.system("git fetch --depth=1 origin %s" % (commit))
         os.system("git reset --hard %s" % (commit))
+
+
+def simulate():
+    is_project(".")
+    cmd = []
+    cmd.append(f"source {EXPORT_SCRIPT} sim_linux")
+    cmd.append("xf build")
+    cmd.append("xf flash")
+    cmd_str = "&&".join(cmd)
+    os.system(cmd_str)

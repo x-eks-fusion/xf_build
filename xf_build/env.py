@@ -5,16 +5,32 @@ import json
 import shutil
 import logging
 from pathlib import Path
+import platform
 
 ENTER_SCRIPT = "xf_project.py"
 COLLECT_SCRIPT = "xf_collect.py"
+
+system = platform.system()
+if system == "Windows":
+    if "PSModulePath" in os.environ:
+        EXPORT_SCRIPT = "export.ps1"
+    elif "PROMPT" in os.environ:
+        EXPORT_SCRIPT = "export.bat"
+    else:
+        raise Exception("当前在windows的不明环境中，无法导出")
+elif system == "Linux":
+    EXPORT_SCRIPT = "export.sh"
+else:
+    raise Exception(f"未知操作系统: {system}")
+
 
 try:
     XF_ROOT = Path(os.environ.get("XF_ROOT")).resolve()
     XF_TARGET = os.environ.get("XF_TARGET")
     XF_TARGET_PATH = Path(os.environ.get("XF_TARGET_PATH")).resolve()
+    EXPORT_SCRIPT = XF_ROOT / EXPORT_SCRIPT
 except TypeError:
-    raise Exception("环境变量未设置, 请检查是否调用 export 脚本")
+    raise Exception(f"环境变量未设置, 请检查是否调用 {EXPORT_SCRIPT} 脚本")
 
 
 XF_PROJECT_PATH = Path(os.environ.get("XF_PROJECT_PATH", Path("."))).resolve()

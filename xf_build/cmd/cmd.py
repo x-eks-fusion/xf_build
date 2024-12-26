@@ -102,6 +102,10 @@ def main():
     target_parser.add_argument('-d', '--download', action='store_true',
                                help="下载SDK")
 
+    # simulate command
+    simulate_parser = subparsers.add_parser('simulate',
+                                            help="模拟器运行", aliases=['sim'])
+
     args = parser.parse_args()
 
     # Logging setup
@@ -140,6 +144,10 @@ def main():
         project.monitor(args.port, args.baud)
     elif args.command == 'target' or args.command == "t":
         handle_target(args)
+    elif args.command == 'simulate' or args.command == "sim":
+        project.simulate()
+    else:
+        parser.print_help()
 
 
 def handle_build(args):
@@ -201,6 +209,7 @@ def handle_update(args):
 
 
 def handle_target(args):
+    logging.info(f"args: {args}")
     if args.download and not args.show:
         project.download_sdk()
     else:
