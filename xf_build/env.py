@@ -49,7 +49,8 @@ ROOT_PROJECT_INFO = ROOT_BUILD_PATH / "project_info.json"
 
 ROOT_BOARDS = XF_ROOT / "boards"
 ROOT_COMPONENTS = XF_ROOT / "components"
-ROOT_PORT = XF_ROOT / "port" / XF_TARGET
+RELATIVE_TARGET = XF_TARGET_PATH.relative_to(XF_ROOT/"boards")
+ROOT_PORT = XF_ROOT / "ports" / RELATIVE_TARGET
 
 ROOT_PLUGIN = XF_ROOT / "plugins" / XF_TARGET
 
@@ -75,7 +76,7 @@ def is_project(folder) -> bool:
     raise Exception("该目录不是工程文件夹")
 
 
-def check_target():
+def check_target(is_clean=True):
     """
     检测目标是否改变，如果改变清除工程
     """
@@ -99,7 +100,7 @@ def check_target():
         json.dump(info, f, indent=4)
 
 
-def check_project():
+def check_project(is_clean=True):
     """
     检测工程是否改变，如果改变清除工程
     """
@@ -112,7 +113,8 @@ def check_project():
                 return
     else:
         ROOT_BUILD_PATH.mkdir(parents=True, exist_ok=True)
-
+    if not is_clean:
+        return
     logging.debug("工程项目改变，重新生成build")
     logging.debug(f"info project:{info.get('XF_PROJECT_PATH')}")
     logging.debug(f"env project:{XF_PROJECT_PATH}")
@@ -123,16 +125,16 @@ def check_project():
         json.dump(info, f, indent=4)
 
 
-def run_build() -> None:
+def run_build(is_clean=True) -> None:
     """
     执行一遍脚本产生编译信息
     """
-    check_target()
-    check_project()
+    check_target(is_clean)
+    check_project(is_clean)
 
     try:
         with open(ENTER_SCRIPT, "r", encoding="utf-8") as f:
             exec(f.read())
     except Exception as e:
         logging.error(f"预编译错误: {e}")
-        return
+        raise e

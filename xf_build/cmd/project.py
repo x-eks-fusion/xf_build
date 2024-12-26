@@ -95,7 +95,7 @@ def before_export(name):
         logging.error("导出sdk工程文件夹不能是xfusion工程的子文件夹")
         return
 
-    run_build()
+    run_build(False)
 
     return name_abspath
 
@@ -114,7 +114,7 @@ def before_update(name):
         logging.error(f"path路径不存在，请确认：{current_path}")
         return
     name_abspath = name.resolve()
-    run_build()
+    run_build(False)
     return name_abspath
 
 
