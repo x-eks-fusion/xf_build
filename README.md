@@ -111,8 +111,9 @@ update 命令需要底层插件支持，其功能是更新导出的工程。与 
 1. 重构了命令行和插件系统，抛弃了 click 和 pluggy 库的引用
 2. 修复串口流控拉高导致的串口无法打印
 3. 修复 update 不会生成 json 问题
-4. 增加 xf simulate 指令。可以配合 [xfusion_simulator](https://github.com/x-eks-fusion/xfusion_simulator)
-5. 支持组件中 import 包含子构建脚本
+4. 修复 export 和 update 会调用 clean 问题
+5. 增加 xf simulate 指令。可以配合 [xfusion_simulator](https://github.com/x-eks-fusion/xfusion_simulator)
+6. 支持组件中 import 包含子构建脚本
 
 **v0.3.9**
 1. xf target 默认执行 xf target -s 功能
