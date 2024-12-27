@@ -194,7 +194,6 @@ def simulate():
     is_project(".")
     cmd = []
     cmd.append(f"source {EXPORT_SCRIPT} sim_linux")
-    cmd.append("pip install ..")
     cmd.append("xf build")
     cmd.append("xf flash")
     cmd_str = "&&".join(cmd)
