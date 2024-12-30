@@ -5,16 +5,32 @@ import json
 import shutil
 import logging
 from pathlib import Path
+import platform
 
 ENTER_SCRIPT = "xf_project.py"
 COLLECT_SCRIPT = "xf_collect.py"
+
+system = platform.system()
+if system == "Windows":
+    if "PSModulePath" in os.environ:
+        EXPORT_SCRIPT = "export.ps1"
+    elif "PROMPT" in os.environ:
+        EXPORT_SCRIPT = "export.bat"
+    else:
+        raise Exception("当前在windows的不明环境中，无法导出")
+elif system == "Linux":
+    EXPORT_SCRIPT = "export.sh"
+else:
+    raise Exception(f"未知操作系统: {system}")
+
 
 try:
     XF_ROOT = Path(os.environ.get("XF_ROOT")).resolve()
     XF_TARGET = os.environ.get("XF_TARGET")
     XF_TARGET_PATH = Path(os.environ.get("XF_TARGET_PATH")).resolve()
+    EXPORT_SCRIPT = XF_ROOT / EXPORT_SCRIPT
 except TypeError:
-    raise Exception("环境变量未设置, 请检查是否调用 export 脚本")
+    raise Exception(f"环境变量未设置, 请检查是否调用 {EXPORT_SCRIPT} 脚本")
 
 
 XF_PROJECT_PATH = Path(os.environ.get("XF_PROJECT_PATH", Path("."))).resolve()
@@ -33,7 +49,8 @@ ROOT_PROJECT_INFO = ROOT_BUILD_PATH / "project_info.json"
 
 ROOT_BOARDS = XF_ROOT / "boards"
 ROOT_COMPONENTS = XF_ROOT / "components"
-ROOT_PORT = XF_ROOT / "port" / XF_TARGET
+RELATIVE_TARGET = XF_TARGET_PATH.relative_to(XF_ROOT/"boards")
+ROOT_PORT = XF_ROOT / "ports" / RELATIVE_TARGET
 
 ROOT_PLUGIN = XF_ROOT / "plugins" / XF_TARGET
 
@@ -59,7 +76,7 @@ def is_project(folder) -> bool:
     raise Exception("该目录不是工程文件夹")
 
 
-def check_target():
+def check_target(is_clean=True):
     """
     检测目标是否改变，如果改变清除工程
     """
@@ -83,7 +100,7 @@ def check_target():
         json.dump(info, f, indent=4)
 
 
-def check_project():
+def check_project(is_clean=True):
     """
     检测工程是否改变，如果改变清除工程
     """
@@ -96,7 +113,8 @@ def check_project():
                 return
     else:
         ROOT_BUILD_PATH.mkdir(parents=True, exist_ok=True)
-
+    if not is_clean:
+        return
     logging.debug("工程项目改变，重新生成build")
     logging.debug(f"info project:{info.get('XF_PROJECT_PATH')}")
     logging.debug(f"env project:{XF_PROJECT_PATH}")
@@ -107,16 +125,16 @@ def check_project():
         json.dump(info, f, indent=4)
 
 
-def run_build() -> None:
+def run_build(is_clean=True) -> None:
     """
     执行一遍脚本产生编译信息
     """
-    check_target()
-    check_project()
+    check_target(is_clean)
+    check_project(is_clean)
 
     try:
         with open(ENTER_SCRIPT, "r", encoding="utf-8") as f:
             exec(f.read())
     except Exception as e:
         logging.error(f"预编译错误: {e}")
-        return
+        raise e
