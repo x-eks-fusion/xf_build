@@ -12,7 +12,7 @@ from rich.progress import Progress
 
 from ..env import ROOT_COMPONENTS, PROJECT_COMPONENTS
 
-HOST = "http://server1.ptwsmart.com:31300"
+HOST = "https://server1.ptwsmart.com:31300"
 SEARCH_API = "{HOST}/api/component/search/{keywords}"
 INSTALL_API = "{HOST}/api/component/download/{name}:{version}.zip"
 
